@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -58,19 +59,61 @@ export default function JiraBoard() {
 
   return (
     <div className="flex flex-col gap-y-6">
-      <div className="flex justify-between">
-        <div className="flex flex-col">
-          <h3 className="font-semibold text-lg">{data.project.name}</h3>
+      <div className="flex justify-center">
+        <div className="flex flex-col gap-y-1 mr-auto">
+          <p className="text-lg font-semibold">{data.project.name}</p>
           <AvatarGroup members={data.members} />
         </div>
-        <div>
+        <div className="ml-auto">
           <SprintSelector sprints={data.sprints} />
         </div>
       </div>
+      {sprint && <BoardMetrics />}
       {sprint && <Board columns={data.columns} />}
     </div>
   );
 }
+
+interface BoardMetricsProps {}
+
+const BoardMetrics = () => {
+  return (
+    <div className="grid grid-flow-col gap-x-9">
+      <Card className="rounded-md">
+        <CardHeader>
+          <CardTitle>Committed Points</CardTitle>
+          <CardDescription>
+            Number of story points committed to the sprint
+          </CardDescription>
+        </CardHeader>
+      </Card>
+      <Card className="rounded-md">
+        <CardHeader>
+          <CardTitle>Logged Hours</CardTitle>
+          <CardDescription>
+            Number of hours worked in the sprint
+          </CardDescription>
+        </CardHeader>
+      </Card>
+      <Card className="rounded-md">
+        <CardHeader>
+          <CardTitle>Completed Points</CardTitle>
+          <CardDescription>
+            Number of completed story points in the sprint
+          </CardDescription>
+        </CardHeader>
+      </Card>
+      <Card className="rounded-md">
+        <CardHeader>
+          <CardTitle>Completed Points</CardTitle>
+          <CardDescription>
+            Number of completed story points in the sprint
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    </div>
+  );
+};
 
 interface AvatarGroupProps {
   members: BoardMember[];
@@ -159,7 +202,7 @@ const Board = ({ columns }: BoardProps) => {
   if (isLoading || !data) return <div>loading...</div>;
 
   return (
-    <div className="flex gap-x-9">
+    <div className="flex gap-x-9 justify-center">
       {columns.map((column) => {
         return <BoardColumn key={column} name={column} issues={data.issues} />;
       })}

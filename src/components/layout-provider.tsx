@@ -38,7 +38,9 @@ export default function LayoutProvider({
           <Provider>
             <SWRConfig value={{ fetcher }}>
               <Header />
-              {children}
+              <main className="mx-auto flex flex-col max-w-7xl">
+                {children}
+              </main>
             </SWRConfig>
           </Provider>
         </ThemeProvider>
