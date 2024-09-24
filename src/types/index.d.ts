@@ -11,6 +11,16 @@ export type Member = {
   pfp: string;
 };
 
+export type TreeContent = {
+  name: string;
+  path: string;
+  files?: TreeContent[];
+};
+
+export interface ArtifactsNode {
+  previous?: ArtifactsNode;
+  artifacts: TreeContent[];
+}
 // export type Actor = {};
 
 export type BoardDetails = {
@@ -30,7 +40,7 @@ export type BoardMember = {
 };
 
 export type BoardSprint = {
-  id: int;
+  id: number;
   state: string;
   name: string;
   startDate: string;
@@ -59,6 +69,13 @@ export type BoardSprintIssue = {
     displayName: string;
     active: boolean;
   };
+  timeSpent: number | null;
+  timeTracking?: {
+    remainingEstimate: string;
+    timeSpent: string;
+    remainingEstimateSeconds: number;
+    timeSpentSeconds: number;
+  };
   status: string;
   description: string | null;
   summary: string;
@@ -77,12 +94,12 @@ export type JiraBoardConfiguration = {
 };
 
 export type JiraBoardSprint = {
-  maxResults: int;
-  startAt: int;
-  total: int;
+  maxResults: number;
+  startAt: number;
+  total: number;
   isLast: boolean;
   values: {
-    id: int;
+    id: number;
     state: string;
     name: string;
     startDate: string;
@@ -93,9 +110,9 @@ export type JiraBoardSprint = {
 };
 
 export type JiraBoardSprintIssue = {
-  startAt: int;
-  maxResults: int;
-  total: int;
+  startAt: number;
+  maxResults: number;
+  total: number;
   issues: {
     id: string;
     key: string;
@@ -105,7 +122,7 @@ export type JiraBoardSprintIssue = {
         description: string;
         name: string;
       };
-      timespent: int | null;
+      timespent: number | null;
       created: string;
       priority: {
         iconUrl: string;
@@ -128,8 +145,8 @@ export type JiraBoardSprintIssue = {
       timetracking?: {
         remainingEstimate: string;
         timeSpent: string;
-        remainingEstimateSeconds: int;
-        timeSpentSeconds: int;
+        remainingEstimateSeconds: number;
+        timeSpentSeconds: number;
       };
       summary: string;
       subtasks: {

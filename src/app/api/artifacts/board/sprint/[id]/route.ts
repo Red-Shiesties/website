@@ -43,9 +43,11 @@ export async function GET(
                   active: issue.fields.assignee.active,
                 }
               : undefined,
+            timeTracking: issue.fields.timetracking,
             status: issue.fields.status.name,
             description: issue.fields.description,
             summary: issue.fields.summary,
+            timeSpent: issue.fields.timespent,
           };
         }) || [],
     },

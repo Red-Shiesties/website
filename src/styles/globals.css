@@ -90,3 +90,10 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.react-pdf__message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100%;
+}

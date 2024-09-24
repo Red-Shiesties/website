@@ -88,9 +88,9 @@ export default function About() {
           <p className="text-lg">
             Assume there is no existing platform that will meet the project
             goals. User testing w/ early adopters to the platform may be
-            constrained because the social network doesn't exist yet, though the
-            Mobility Independence Foundation will be working alongside the
-            project team to address this concern.
+            constrained because the social network doesn`&apos;t exist yet,
+            though the Mobility Independence Foundation will be working
+            alongside the project team to address this concern.
           </p>
         </div>
       </section>

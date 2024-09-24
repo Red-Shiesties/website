@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { cn, converMsToHString } from '@/lib/utils';
 import {
   BoardDetails,
   BoardMember,
@@ -31,14 +31,18 @@ import {
   BoardSprintIssue,
   BoardSprintIssues,
 } from '@/types';
-import { atom, useAtom, useAtomValue } from 'jotai';
+import { atom, useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useEffect } from 'react';
 import useSWR from 'swr';
+import { Progress } from './ui/progress';
 
 const sprintAtom = atom<BoardSprint>();
+const issuesAtom = atom<BoardSprintIssue[]>();
 
 export default function JiraBoard() {
   const [sprint, setSprint] = useAtom(sprintAtom);
+  const issues = useAtomValue(issuesAtom);
+
   const { data, error, isLoading } = useSWR<BoardDetails>(
     '/api/artifacts/board'
   );
@@ -57,6 +61,10 @@ export default function JiraBoard() {
   if (error) return <div>failed to load</div>;
   if (isLoading || !data) return <div>loading...</div>;
 
+  const completedTasks =
+    issues?.filter((issue) => issue.status === 'Done') || [];
+  const progressValue = (completedTasks.length / (issues || []).length) * 100;
+
   return (
     <div className="flex flex-col gap-y-6">
       <div className="flex justify-center">
@@ -64,51 +72,45 @@ export default function JiraBoard() {
           <p className="text-lg font-semibold">{data.project.name}</p>
           <AvatarGroup members={data.members} />
         </div>
-        <div className="ml-auto">
+        <div className="flex flex-col gap-y-1 ml-auto">
           <SprintSelector sprints={data.sprints} />
+          <Progress className="my-auto" value={progressValue} />
         </div>
       </div>
-      {sprint && <BoardMetrics />}
-      {sprint && <Board columns={data.columns} />}
+      <Card className="max-w-6xl p-0 max-h-[42rem] overflow-x-scroll">
+        <CardContent className="grid gap-y-9 p-0 py-9">
+          {sprint && <BoardMetrics />}
+          {sprint && <Board columns={data.columns} />}
+        </CardContent>
+      </Card>
     </div>
   );
 }
 
-interface BoardMetricsProps {}
-
 const BoardMetrics = () => {
+  const issues = useAtomValue(issuesAtom);
+
+  const secondsWorked =
+    issues?.reduce((sum, issue) => sum + (issue.timeSpent || 0), 0) || 0;
+
   return (
-    <div className="grid grid-flow-col gap-x-9">
-      <Card className="rounded-md">
-        <CardHeader>
-          <CardTitle>Committed Points</CardTitle>
-          <CardDescription>
-            Number of story points committed to the sprint
-          </CardDescription>
-        </CardHeader>
-      </Card>
+    <div className="grid grid-flow-col gap-9 px-9">
       <Card className="rounded-md">
         <CardHeader>
           <CardTitle>Logged Hours</CardTitle>
-          <CardDescription>
-            Number of hours worked in the sprint
-          </CardDescription>
+          <CardDescription>{converMsToHString(secondsWorked)}</CardDescription>
+        </CardHeader>
+      </Card>
+      <Card className="rounded-md">
+        <CardHeader>
+          <CardTitle>Committed Points</CardTitle>
+          <CardDescription>10</CardDescription>
         </CardHeader>
       </Card>
       <Card className="rounded-md">
         <CardHeader>
           <CardTitle>Completed Points</CardTitle>
-          <CardDescription>
-            Number of completed story points in the sprint
-          </CardDescription>
-        </CardHeader>
-      </Card>
-      <Card className="rounded-md">
-        <CardHeader>
-          <CardTitle>Completed Points</CardTitle>
-          <CardDescription>
-            Number of completed story points in the sprint
-          </CardDescription>
+          <CardDescription>0</CardDescription>
         </CardHeader>
       </Card>
     </div>
@@ -192,17 +194,24 @@ interface BoardProps {
 }
 
 const Board = ({ columns }: BoardProps) => {
+  const setIssues = useSetAtom(issuesAtom);
   const sprint = useAtomValue(sprintAtom);
 
   const { data, error, isLoading } = useSWR<BoardSprintIssues>(
     `/api/artifacts/board/sprint/${sprint?.id}`
   );
 
+  useEffect(() => {
+    if (!data) return;
+
+    setIssues(data.issues);
+  }, [data, setIssues]);
+
   if (error) return <div>failed to load</div>;
   if (isLoading || !data) return <div>loading...</div>;
 
   return (
-    <div className="flex gap-x-9 justify-center">
+    <div className="flex gap-x-9 justify-center px-9">
       {columns.map((column) => {
         return <BoardColumn key={column} name={column} issues={data.issues} />;
       })}
@@ -221,9 +230,8 @@ const BoardColumn = ({ name, issues }: BoardColumnProps) => {
   return (
     <Card className="w-[350px] rounded-md">
       <CardHeader>
-        <CardTitle>
-          {name} : {filteredIssues.length}
-        </CardTitle>
+        <CardTitle>{name}</CardTitle>
+        <CardDescription>{filteredIssues.length} items</CardDescription>
       </CardHeader>
       <CardContent className="grid grid-flow-row gap-y-3">
         {filteredIssues.map((issue) => (
@@ -240,7 +248,7 @@ interface SprintIssueProps {
 
 const SprintIssue = ({ issue }: SprintIssueProps) => {
   return (
-    <Card className="rounded-sm text-sm">
+    <Card className="rounded-md text-sm">
       <CardHeader className="p-3 pb-0">
         <CardTitle>{issue.summary}</CardTitle>
       </CardHeader>

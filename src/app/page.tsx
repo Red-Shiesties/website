@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import { Card } from '@/components/ui/card';
+import { Card } from "@/components/ui/card";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-} from '@/components/ui/carousel';
-import { coach, members, sponsors } from '@/lib/config';
-import { Member } from '@/types';
-import AutoScroll from 'embla-carousel-auto-scroll';
-import { motion } from 'framer-motion';
+} from "@/components/ui/carousel";
+import { coach, members, sponsors } from "@/lib/config";
+import { Member } from "@/types";
+import AutoScroll from "embla-carousel-auto-scroll";
+import { motion } from "framer-motion";
 
 export default function Home() {
   return (
     <section id="team" className="mt-32 flex flex-col items-center">
       <motion.h2
-        initial={{ opacity: 0, y: '-15%' }}
+        initial={{ opacity: 0, y: "-15%" }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 0.25 }}
         className="font-thin text-4xl"
@@ -23,13 +23,13 @@ export default function Home() {
         Making an impact by resolving wheelchair repair issues.
       </motion.h2>
       <motion.div
-        initial={{ opacity: 0, y: '-5%' }}
+        initial={{ opacity: 0, y: "-5%" }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 1.5 }}
       >
         <Carousel
           className="mt-16"
-          opts={{ loop: true, align: 'start', skipSnaps: true }}
+          opts={{ loop: true, align: "start", skipSnaps: true }}
           plugins={[
             AutoScroll({
               speed: 1,
@@ -41,7 +41,7 @@ export default function Home() {
         >
           <CarouselContent>
             {[...coach, ...members, ...sponsors].map((member) => (
-              <MemberCard member={member} />
+              <MemberCard key={member.title} member={member} />
             ))}
           </CarouselContent>
         </Carousel>
@@ -54,7 +54,7 @@ interface MemberCardProps {
   member: Member;
 }
 
-export const MemberCard = ({ member }: MemberCardProps) => {
+const MemberCard = ({ member }: MemberCardProps) => {
   return (
     <CarouselItem
       key={member.firstName}
@@ -63,7 +63,7 @@ export const MemberCard = ({ member }: MemberCardProps) => {
       <Card
         style={{
           backgroundImage: member.pfp ? `url(${member.pfp})` : undefined,
-          background: member.pfp ? undefined : 'transparent',
+          background: member.pfp ? undefined : "transparent",
         }}
         className="cursor-default bg-cover rounded-tl-none aspect-square rounded-tr-3xl rounded-bl-3xl rounded-br-none"
       />

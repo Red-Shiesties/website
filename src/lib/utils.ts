@@ -22,3 +22,7 @@ export function formatDateString(date: string) {
     day: 'numeric',
   });
 }
+
+export function converMsToHString(seconds: number) {
+  return `${Math.round(seconds / 3600)}h`;
+}
