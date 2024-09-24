@@ -19,7 +19,7 @@ import 'react-pdf/dist/Page/TextLayer.css';
 import { SelectSeparator } from './ui/select';
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
+  'pdfjs-dist/legacy/build/pdf.worker.min.mjs',
   import.meta.url
 ).toString();
 
