@@ -55,6 +55,7 @@ export type BoardSprintIssues = {
 export type BoardSprintIssue = {
   id: string;
   key: string;
+  storyPointEstimate: number | null;
   issueType: {
     iconUrl: string;
     description: string;
@@ -117,6 +118,7 @@ export type JiraBoardSprintIssue = {
     id: string;
     key: string;
     fields: {
+      customfield_10016: number | null;
       issuetype: {
         iconUrl: string;
         description: string;

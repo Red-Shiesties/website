@@ -93,6 +93,15 @@ const BoardMetrics = () => {
   const secondsWorked =
     issues?.reduce((sum, issue) => sum + (issue.timeSpent || 0), 0) || 0;
 
+  const committedPoints =
+    issues?.reduce((sum, issue) => sum + (issue.storyPointEstimate || 0), 0) ||
+    0;
+
+  const completedPoints =
+    issues
+      ?.filter((issue) => issue.status === 'Done')
+      .reduce((sum, issue) => sum + (issue.storyPointEstimate || 0), 0) || 0;
+
   return (
     <div className="grid grid-flow-col gap-9 px-9">
       <Card className="rounded-md">
@@ -104,13 +113,13 @@ const BoardMetrics = () => {
       <Card className="rounded-md">
         <CardHeader>
           <CardTitle>Committed Points</CardTitle>
-          <CardDescription>10</CardDescription>
+          <CardDescription>{committedPoints}</CardDescription>
         </CardHeader>
       </Card>
       <Card className="rounded-md">
         <CardHeader>
           <CardTitle>Completed Points</CardTitle>
-          <CardDescription>0</CardDescription>
+          <CardDescription>{completedPoints}</CardDescription>
         </CardHeader>
       </Card>
     </div>
@@ -262,14 +271,21 @@ const SprintIssue = ({ issue }: SprintIssueProps) => {
             {issue.key}
           </p>
         </div>
-        {issue.assignee && (
-          <div className="flex items-center">
-            <Avatar className="h-6 w-6">
-              <AvatarImage src={issue.assignee.avatarUrl} />
-              <AvatarFallback>{issue.assignee.displayName}</AvatarFallback>
-            </Avatar>
-          </div>
-        )}
+        <div className="flex items-center gap-x-3">
+          {issue.storyPointEstimate && (
+            <div className="flex items-center justify-center rounded-full h-6 w-6 text-xs bg-secondary">
+              {issue.storyPointEstimate}
+            </div>
+          )}
+          {issue.assignee && (
+            <div className="flex items-center">
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={issue.assignee.avatarUrl} />
+                <AvatarFallback>{issue.assignee.displayName}</AvatarFallback>
+              </Avatar>
+            </div>
+          )}
+        </div>
       </CardFooter>
     </Card>
   );

@@ -48,6 +48,7 @@ export async function GET(
             description: issue.fields.description,
             summary: issue.fields.summary,
             timeSpent: issue.fields.timespent,
+            storyPointEstimate: issue.fields.customfield_10016,
           };
         }) || [],
     },

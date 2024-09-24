@@ -33,7 +33,7 @@ export const ArtifactsViewer = ({ artifacts }: ArtifactsViewerProps) => {
   const [file, setFile] = useState<TreeContent>();
   const [numPages, setNumPages] = useState(0);
   const [page, setPage] = useState(1);
-  const [containerRef, setContainerRef] = useState<HTMLElement | null>(null);
+  const [containerRef] = useState<HTMLElement | null>(null);
   const [containerWidth, setContainerWidth] = useState<number>(800);
 
   const onResize = useCallback<ResizeObserverCallback>((entries) => {
