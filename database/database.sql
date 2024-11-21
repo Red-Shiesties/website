@@ -1,87 +1,92 @@
 DROP DATABASE IF EXISTS WheelChairRepair;
 CREATE DATABASE WheelChairRepair;
-USE WheelChairRepair;
+-- USE WheelChairRepair;
+CREATE TYPE accountType AS ENUM ('user', 'admin', 'moderator');
+CREATE TYPE listingState AS ENUM ('Active', 'Inactive', 'Complete', 'Archived');
+CREATE TYPE orderStatus AS ENUM ('Initiated', 'Pending', 'Fulfilled', 'Voided');
+CREATE TYPE requestStatus AS ENUM ('Pending', 'Accepted', 'Denied');
+CREATE TYPE inviteType AS ENUM ('Organization', 'Site');
 
 CREATE TABLE Inventory(
-    inventoryID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    inventoryID SERIAL PRIMARY KEY,
     parentInventoryID INT,
     organizationID INT,
     Name VARCHAR(40) NOT NULL,
-    description LONGTEXT,
+    description VARCHAR(4000),
     location VARCHAR(100),
     FOREIGN KEY (parentInventoryID) REFERENCES Inventory(inventoryID)
 );
 
-CREATE TABLE User(
-    userID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE "User"(
+    userID SERIAL PRIMARY KEY,
     organizationID INT NOT NULL,
     firstName VARCHAR(30) NOT NULL,
     lastName VARCHAR(30) NOT NULL,
     email VARCHAR(50) NOT NULL,
     password VARCHAR(50) NOT NULL,
     displayName VARCHAR(50),
-    accType ENUM('user', 'admin', 'moderator') NOT NULL DEFAULT 'user',
+    accType accountType DEFAULT 'user',
     lastActivity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     inactive VARCHAR(1) DEFAULT '0',
     referralCode VARCHAR(10) DEFAULT '0000000',
     referredBy INT,
-    rating DOUBLE DEFAULT 0.0,
+    rating DECIMAL DEFAULT 0.0,
     signupComplete BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE Organization(
-    organizationID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    organizationID SERIAL PRIMARY KEY,
     inventoryID INT NOT NULL,
     userID INT NOT NULL,
     Name VARCHAR(40) NOT NULL,
     lastActivity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     inactive VARCHAR(1) DEFAULT '0',
-    services LONGTEXT,
-    rating DOUBLE DEFAULT 0.0,
+    services VARCHAR(4000),
+    rating DECIMAL DEFAULT 0.0,
     addressLine1 VARCHAR(50),
     addressLine2 VARCHAR(50),
     city VARCHAR(30),
     state VARCHAR(15),
-    zipcode int,
+    zipcode INT,
     phoneNumber VARCHAR(15),
     FOREIGN KEY (inventoryID) REFERENCES Inventory(inventoryID)
 );
 
 -- Add invite expiration date to be dateSent + 14 days
 CREATE TABLE Invite(
-    inviteID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    inviteID SERIAL PRIMARY KEY,
     senderID INT NOT NULL,
     organizationID INT NOT NULL,
     recieverEmail VARCHAR(40) NOT NULL,
-    description LONGTEXT,
-    inviteType ENUM("Organization", "Site") NOT NULL, 
+    description VARCHAR(4000),
+    invType inviteType NOT NULL, 
     sentOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     expiresOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     acceptedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (senderID) REFERENCES User(userID),
+    FOREIGN KEY (senderID) REFERENCES "User"(userID),
     FOREIGN KEY (organizationID) REFERENCES Organization(organizationID)
 );
 
 CREATE TABLE Connections(
-    connectionID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    connectionID SERIAL PRIMARY KEY,
     user1ID INT NOT NULL,
     user2ID INT NOT NULL,
-    FOREIGN KEY (user1ID) REFERENCES User(userID),
-    FOREIGN KEY (user2ID) REFERENCES User(userID)
+    FOREIGN KEY (user1ID) REFERENCES "User"(userID),
+    FOREIGN KEY (user2ID) REFERENCES "User"(userID)
 );
 
 CREATE TABLE Manufacturer(
-    manufacturerID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    manufacturerID SERIAL PRIMARY KEY,
     name VARCHAR(30)
 );
 
 CREATE TABLE modelType(
-    modelTypeID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    modelTypeID SERIAL PRIMARY KEY,
     typeName VARCHAR(30) NOT NULL
 );
 
 CREATE TABLE Model(
-    modelID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    modelID SERIAL PRIMARY KEY,
     manufacturerID INT NOT NULL,
     name VARCHAR(30) NOT NULL,
     year INT NOT NULL,
@@ -89,7 +94,7 @@ CREATE TABLE Model(
 );
 
 CREATE TABLE modelLinkModelType(
-    modelLinkModelTypeID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    modelLinkModelTypeID SERIAL PRIMARY KEY,
     modelID INT NOT NULL,
     modelTypeID INT NOT NULL,
     FOREIGN KEY (modelID) REFERENCES Model(modelID),
@@ -97,21 +102,21 @@ CREATE TABLE modelLinkModelType(
 );
 
 CREATE TABLE partType(
-    partTypeID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    partTypeID SERIAL PRIMARY KEY,
     typeName VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE Part(
-    partID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    partID SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
-    description LONGTEXT,
+    description VARCHAR(4000),
     modelID INT NOT NULL,
     partNumber VARCHAR(30),
     FOREIGN KEY (modelID) REFERENCES Model(modelID)
 );
 
 CREATE TABLE partLinkPartType(
-    partLinkPartTypeID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    partLinkPartTypeID SERIAL PRIMARY KEY,
     partID INT NOT NULL,
     partTypeID INT NOT NULL,
     FOREIGN KEY (partID) REFERENCES Part(partID),
@@ -119,86 +124,86 @@ CREATE TABLE partLinkPartType(
 );
 
 CREATE TABLE inventoryItem(
-    inventoryItemID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    inventoryItemID SERIAL PRIMARY KEY,
     partID INT NOT NULL,
     modelID INT NOT NULL,
     inventoryID INT NOT NULL,
     quantity INT NOT NULL DEFAULT 0,
     publicCount INT DEFAULT 0,
-    notes LONGTEXT,
-    attributes LONGTEXT,
+    notes VARCHAR(4000),
+    attributes VARCHAR(4000),
     FOREIGN KEY (partID) REFERENCES Part(partID),
     FOREIGN KEY (modelID) REFERENCES Model(modelID),
     FOREIGN KEY (inventoryID) REFERENCES Inventory(inventoryID)
 );
 
 CREATE TABLE Listing(
-    listingID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    listingID SERIAL PRIMARY KEY,
     inventoryItemID INT NOT NULL,
     userID INT NOT NULL,
     name VARCHAR(40) NOT NULL,
-    description LONGTEXT,
-    attributes LONGTEXT,
+    description VARCHAR(4000),
+    attributes VARCHAR(4000),
     quantity INT DEFAULT 1,
     latitude FLOAT NOT NULL,
     longitude FLOAT NOT NULL,
     inactive VARCHAR(1) DEFAULT '0',
     zipcode VARCHAR(10) NOT NULL,
-    state ENUM("Active", "Inactive", "Complete", "Archived") DEFAULT "Active",
+    state listingState DEFAULT 'Active',
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (inventoryItemID) REFERENCES inventoryItem(inventoryItemID),
-    FOREIGN KEY (userID) REFERENCES User(userID)
+    FOREIGN KEY (userID) REFERENCES "User"(userID)
 );
 
-CREATE TABLE `Order`(
-    orderID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE "Order"(
+    orderID SERIAL PRIMARY KEY,
     listingID INT NOT NULL,
     owner INT NOT NULL,
     recipient INT NOT NULL,
     quantity INT NOT NULL,
-    status ENUM('Initiated', 'Pending', 'Fulfilled', 'Voided'),
+    status orderStatus,
     dateCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     dateCompleted TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (listingID) REFERENCES Listing(listingID),
-    FOREIGN KEY (owner) REFERENCES User(userID),
-    FOREIGN KEY (recipient) REFERENCES User(userID)
+    FOREIGN KEY (owner) REFERENCES "User"(userID),
+    FOREIGN KEY (recipient) REFERENCES "User"(userID)
 );
 
 CREATE TABLE Bookmark(
     bookmarkID INT NOT NULL,
     userID INT NOT NULL,
     listingID INT NOT NULL,
-    FOREIGN KEY (userID) REFERENCES User(userID),
+    FOREIGN KEY (userID) REFERENCES "User"(userID),
     FOREIGN KEY (listingID) REFERENCES Listing(listingID)
 );
 
 CREATE TABLE Conversation(
-    conversationID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    conversationID SERIAL PRIMARY KEY,
     listingID INT DEFAULT NULL,
     participent1ID INT NOT NULL,
     participent2ID INT NOT NULL,
     FOREIGN KEY (listingID) REFERENCES Listing(listingID),
-    FOREIGN KEY (participent1ID) REFERENCES User(userID),
-    FOREIGN KEY (participent2ID) REFERENCES User(userID)
+    FOREIGN KEY (participent1ID) REFERENCES "User"(userID),
+    FOREIGN KEY (participent2ID) REFERENCES "User"(userID)
 );
 
 CREATE TABLE Message(
-    messageID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    messageID SERIAL PRIMARY KEY,
     senderID INT NOT NULL,
     conversationID INT NOT NULL,
-    messageContent LONGTEXT,
+    messageContent VARCHAR(4000),
     readStatus TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (senderID) REFERENCES User(userID),
+    FOREIGN KEY (senderID) REFERENCES "User"(userID),
     FOREIGN KEY (conversationID) REFERENCES Conversation(conversationID)
 );
 
 CREATE TABLE Tag(
-    tagID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    tagID SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE inventoryItemLinkTag(
-    inventoryItemLinkTagID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    inventoryItemLinkTagID SERIAL PRIMARY KEY,
     inventoryItemID INT NOT NULL,
     tagID INT NOT NULL,
     FOREIGN KEY (inventoryItemID) REFERENCES inventoryItem(inventoryItemID),
@@ -206,30 +211,30 @@ CREATE TABLE inventoryItemLinkTag(
 );
 
 CREATE TABLE Request(
-    requestID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    requestID SERIAL PRIMARY KEY,
     approverID INT NOT NULL,
     EIN VARCHAR(9) NOT NULL,
     firstName VARCHAR(20) NOT NULL,
     lastName VARCHAR(20) NOT NULL,
     email VARCHAR(30) NOT NULL,
-    description LONGTEXT NOT NULL,
+    description VARCHAR(4000) NOT NULL,
     sentOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     actionTakenOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status ENUM("Pending", "Accepted", "Denied"),
-    FOREIGN KEY (approverID) REFERENCES User(userID)
+    status requestStatus,
+    FOREIGN KEY (approverID) REFERENCES "User"(userID)
 );
 
 CREATE TABLE Review(
-    reviewID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    reviewID SERIAL PRIMARY KEY,
     reviewerID INT NOT NULL,
     reviewedUserID INT NOT NULL,
     orderID INT NOT NULL,
-    description LONGTEXT NOT NULL,
+    description VARCHAR(4000) NOT NULL,
     rating INT,
     sentOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (reviewerID) REFERENCES User(userID),
-    FOREIGN KEY (reviewedUserID) REFERENCES User(userID),
-    FOREIGN KEY (orderID) REFERENCES `Order`(orderID)
+    FOREIGN KEY (reviewerID) REFERENCES "User"(userID),
+    FOREIGN KEY (reviewedUserID) REFERENCES "User"(userID),
+    FOREIGN KEY (orderID) REFERENCES "Order"(orderID)
 );
 
 
@@ -242,7 +247,7 @@ VALUES
     (4, 2, NULL, 'Warehouse Inventory', 'General warehouse stock.', 'Warehouse District');
 
 -- Insert data into the User table
-INSERT INTO User (userID, organizationID, firstName, lastName, email, password, displayName, accType, lastActivity, inactive, referralCode, referredBy, rating)
+INSERT INTO "User" (userID, organizationID, firstName, lastName, email, password, displayName, accType, lastActivity, inactive, referralCode, referredBy, rating)
 VALUES 
     (1, 1, 'John', 'Doe', 'john.doe@example.com', 'password123', 'JohnD', 'admin', CURRENT_TIMESTAMP, '0', 'ABC123', NULL, 4.5),
     (2, 2, 'Jane', 'Smith', 'jane.smith@example.com', 'securepass', 'JaneS', 'user', CURRENT_TIMESTAMP, '0', 'XYZ456', 1, 4.0),
@@ -258,7 +263,7 @@ VALUES
     (4, 4, 4, 'Delta Warehouse Services', CURRENT_TIMESTAMP, '0', 'Storage services, Logistics', 4.0, '321 Logistics Rd', NULL, 'Portland', 'OR', 97204, '503-555-3456');
 
 -- Insert data into Invite table
-INSERT INTO Invite (senderID, organizationID, recieverEmail, description, inviteType, sentOn, expiresOn, acceptedOn)
+INSERT INTO Invite (senderID, organizationID, recieverEmail, description, invType, sentOn, expiresOn, acceptedOn)
 VALUES
     (1, 1, 'alex.brown@example.com', 'Invitation to join organization', "Organization",CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
     (2, 2, 'sara.green@example.com', 'Invitation to join organization', "Organization",CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
@@ -356,7 +361,7 @@ VALUES
     (4, 4, 1);
 
 -- Insert data into Order table
-INSERT INTO `Order` (listingID, owner, recipient, quantity, status, dateCreated, dateCompleted)
+INSERT INTO "Order" (listingID, owner, recipient, quantity, status, dateCreated, dateCompleted)
 VALUES
     (1, 1, 2, 2, 'Fulfilled', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
     (2, 2, 3, 1, 'Pending', CURRENT_TIMESTAMP, NULL),
@@ -397,11 +402,11 @@ VALUES
 
 
 -- Add foreign key constraints after data insertion
-ALTER TABLE User
+ALTER TABLE "User"
     ADD FOREIGN KEY (organizationID) REFERENCES Organization(organizationID);
 
 ALTER TABLE Organization
-    ADD FOREIGN KEY (userID) REFERENCES User(userID);
+    ADD FOREIGN KEY (userID) REFERENCES "User"(userID);
 
 ALTER TABLE Inventory
     ADD FOREIGN KEY(organizationID) REFERENCES Organization(organizationID);
@@ -427,14 +432,14 @@ SELECT
     user2.displayName AS "Participant 2"
 FROM 
     Conversation
-    INNER JOIN User AS user1 ON Conversation.participent1ID = user1.userID
-    INNER JOIN User AS user2 ON Conversation.participent2ID = user2.userID;
+    INNER JOIN "User" AS user1 ON Conversation.participent1ID = user1.userID
+    INNER JOIN "User" AS user2 ON Conversation.participent2ID = user2.userID;
 
 -- Get all relevant Order information
 SELECT 
-    `Order`.orderID,
-    `Order`.quantity,
-    `Order`.status,
+    "Order".orderID,
+    "Order".quantity,
+    "Order".status,
     Listing.name AS "Listing Name",
     Listing.description AS "Description",
     Part.name AS "inventory Item Name",
@@ -444,20 +449,20 @@ SELECT
     ownerUser.displayName AS "Owner Name",
     recipientUser.displayName AS "Recipient Name"
 FROM 
-    `Order`
+    "Order"
     INNER JOIN Listing USING (listingID)
     INNER JOIN inventoryItem USING (inventoryItemID)
     INNER JOIN Part USING (partID)
     INNER JOIN Model ON inventoryItem.modelID = Model.modelID
     INNER JOIN Manufacturer ON Model.manufacturerID = Manufacturer.manufacturerID
-    INNER JOIN User AS ownerUser ON `Order`.owner = ownerUser.userID
-    INNER JOIN User AS recipientUser ON `Order`.recipient = recipientUser.userID;
+    INNER JOIN "User" AS ownerUser ON "Order".owner = ownerUser.userID
+    INNER JOIN "User" AS recipientUser ON "Order".recipient = recipientUser.userID;
 
 
 -- Get all relavent information about a listing
 SELECT 
     Listing.inventoryItemID,
-    User.displayName AS "Seller",
+    "User".displayName AS "Seller",
     Listing.name AS "Listing Name",
     Part.name AS "Part Name",
     Listing.description AS "Description",
@@ -468,13 +473,13 @@ SELECT
     Listing.zipcode
 FROM 
     Listing
-    INNER JOIN User USING(userID)
+    INNER JOIN "User" USING(userID)
     INNER JOIN inventoryItem USING(inventoryItemID)
     INNER JOIN Part USING(partID);
 
 -- Show all the invites that a specific user has sent
 SELECT
-    User.displayName AS "Sender",
+    "User".displayName AS "Sender",
     Invite.organizationID,
     Invite.recieverEmail AS "Recipient",
     Invite.description AS "Reason for invite",
@@ -483,7 +488,7 @@ SELECT
     Invite.acceptedOn
 FROM
     Invite
-    INNER JOIN User ON Invite.senderID = User.userID
+    INNER JOIN "User" ON Invite.senderID = "User".userID
 WHERE 
     Invite.senderID = 3;
 
@@ -495,8 +500,8 @@ SELECT
     user2.displayName AS "Participant 2"
 FROM 
     Conversation
-    INNER JOIN User AS user1 ON Conversation.participent1ID = user1.userID
-    INNER JOIN User AS user2 ON Conversation.participent2ID = user2.userID
+    INNER JOIN "User" AS user1 ON Conversation.participent1ID = user1.userID
+    INNER JOIN "User" AS user2 ON Conversation.participent2ID = user2.userID
     INNER JOIN Listing USING (listingID)
 WHERE user1.userID =  1 OR  user2.userID = 1;
 
@@ -506,8 +511,8 @@ SELECT
     user2.displayName AS "Connections"
 FROM 
     Connections
-    INNER JOIN User AS user1 ON Connections.user1ID = user1.userID
-    INNER JOIN User AS user2 ON Connections.user2ID = user2.userID
+    INNER JOIN "User" AS user1 ON Connections.user1ID = user1.userID
+    INNER JOIN "User" AS user2 ON Connections.user2ID = user2.userID
 WHERE Connections.user1ID = 1;
 
 -- Show all the inventory items in an organization inventories
@@ -539,39 +544,39 @@ WHERE
 
 -- Show all users where rating is < 4.1
 SELECT 
-    User.displayName AS 'Display name',
-    User.firstName AS 'First Name',
-    User.lastName AS 'Last Name',
-    User.email,
-    User.accType AS "Account Type", 
-    User.lastActivity, 
-    User.referralCode AS "Referral Code",
-    User.rating AS "Rating"
+    "User".displayName AS 'Display name',
+    "User".firstName AS 'First Name',
+    "User".lastName AS 'Last Name',
+    "User".email,
+    "User".accType AS "Account Type", 
+    "User".lastActivity, 
+    "User".referralCode AS "Referral Code",
+    "User".rating AS "Rating"
 FROM 
-    User
+    "User"
 WHERE 
     rating < 4.1;
 
 -- Show all users where rating is > 4.1
 SELECT 
-    User.displayName AS 'Display name',
-    User.firstName AS 'First Name',
-    User.lastName AS 'Last Name',
-    User.email,
-    User.accType AS "Account Type", 
-    User.lastActivity, 
-    User.referralCode AS "Referral Code",
-    User.rating AS "Rating"
+    "User".displayName AS 'Display name',
+    "User".firstName AS 'First Name',
+    "User".lastName AS 'Last Name',
+    "User".email,
+    "User".accType AS "Account Type", 
+    "User".lastActivity, 
+    "User".referralCode AS "Referral Code",
+    "User".rating AS "Rating"
 FROM 
-    User
+    "User"
 WHERE 
     rating > 4.1;
 
 -- Show a users bookmarks
 SELECT  
     Bookmark.bookmarkID,
-    User.firstName AS 'First Name',
-    User.lastName AS 'Last Name',
+    "User".firstName AS 'First Name',
+    "User".lastName AS 'Last Name',
     Listing.name AS 'Listing Name',
     Part.name AS 'Part Name',
     Listing.description AS "Description",
@@ -582,12 +587,12 @@ SELECT
     Listing.zipcode
 FROM 
     Bookmark
-    INNER JOIN User ON Bookmark.userID = User.userID
+    INNER JOIN "User" ON Bookmark.userID = "User".userID
     INNER JOIN Listing ON Bookmark.listingID = Listing.listingID
     INNER JOIN inventoryItem ON Listing.inventoryItemID = inventoryItem.inventoryItemID
     INNER JOIN Part ON inventoryItem.partID = Part.partID
 WHERE 
-    User.userID = 1;
+    "User".userID = 1;
 
 -- Show all messages from a conversation regarding a specific listing
 SELECT 
@@ -598,8 +603,8 @@ SELECT
     Message.messageContent AS "Content"
 FROM 
     Conversation
-    INNER JOIN User AS user1 ON Conversation.participent1ID = user1.userID
-    INNER JOIN User AS user2 ON Conversation.participent2ID = user2.userID
+    INNER JOIN "User" AS user1 ON Conversation.participent1ID = user1.userID
+    INNER JOIN "User" AS user2 ON Conversation.participent2ID = user2.userID
     INNER JOIN Listing USING (listingID)
     INNER JOIN Message USING (conversationID)
 WHERE 

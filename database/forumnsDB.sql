@@ -246,3 +246,32 @@ VALUES
 (3, 2, '2024-11-30 00:00:00', 'Spam posting.'),
 (4, 3, '2024-12-15 00:00:00', 'Repeated warnings ignored.'),
 (2, 4, '2024-12-10 00:00:00', 'Inappropriate behavior.');
+
+
+
+-- Get all threads from a specific subforum. 
+-- Does not currently sort in chronological order by most active. 
+-- Does not currently indicate if the thread has been read or not. 
+-- Does not currently show a preview of most recent message in the discussion.
+-- order by posts timestamp distinct
+SELECT 
+    Thread.threadID,
+    Thread.title,
+    Thread.postedOn,
+    Thread.numberOfReplies,
+    Thread.isLocked,
+    Prefix.name AS "Prefix Name",
+    User.displayName AS "Username"
+FROM 
+    Thread
+    INNER JOIN Prefix USING(prefixID)
+    INNER JOIN User USING(userID)
+WHERE 
+    Thread.forumID = 1
+LIMIT 
+    25;
+
+-- Create a new post. 
+
+
+
