@@ -638,7 +638,7 @@ FROM
     INNER JOIN Model USING (modelID)
     INNER JOIN Manufacturer ON Model.manufacturerID = Manufacturer.manufacturerID
 WHERE
-    Model.name = "EasyMove";
+    Model.name = 'EasyMove';
 
 -- Show all the parts in a particular type
 SELECT 
