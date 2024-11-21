@@ -1,5 +1,5 @@
-DROP DATABASE IF EXISTS WheelChairRepair;
-CREATE DATABASE WheelChairRepair;
+-- DROP DATABASE IF EXISTS WheelChairRepair;
+-- CREATE DATABASE WheelChairRepair;
 -- USE WheelChairRepair;
 CREATE TYPE accountType AS ENUM ('user', 'admin', 'moderator');
 CREATE TYPE listingState AS ENUM ('Active', 'Inactive', 'Complete', 'Archived');
@@ -265,11 +265,11 @@ VALUES
 -- Insert data into Invite table
 INSERT INTO Invite (senderID, organizationID, recieverEmail, description, invType, sentOn, expiresOn, acceptedOn)
 VALUES
-    (1, 1, 'alex.brown@example.com', 'Invitation to join organization', "Organization",CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
-    (2, 2, 'sara.green@example.com', 'Invitation to join organization', "Organization",CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
-    (3, 3, 'lisa.white@example.com', 'Invitation to join organization', "Organization",CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
-    (3, 1, 'jon.frost@example.com', 'Wants to join the site', "Site",CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
-    (4, 1, 'mike.blue@example.com', 'Invitation to join organization', "Organization",CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL);
+    (1, 1, 'alex.brown@example.com', 'Invitation to join organization', 'Organization',CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
+    (2, 2, 'sara.green@example.com', 'Invitation to join organization', 'Organization',CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
+    (3, 3, 'lisa.white@example.com', 'Invitation to join organization','Organization',CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
+    (3, 1, 'jon.frost@example.com', 'Wants to join the site', 'Site',CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
+    (4, 1, 'mike.blue@example.com', 'Invitation to join organization', 'Organization',CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL);
 
 -- Insert data into Connections table
 INSERT INTO Connections (user1ID, user2ID)
@@ -544,9 +544,9 @@ WHERE
 
 -- Show all users where rating is < 4.1
 SELECT 
-    "User".displayName AS 'Display name',
-    "User".firstName AS 'First Name',
-    "User".lastName AS 'Last Name',
+    "User".displayName AS "Display name",
+    "User".firstName AS "First Name",
+    "User".lastName AS "Last Name",
     "User".email,
     "User".accType AS "Account Type", 
     "User".lastActivity, 
@@ -559,9 +559,9 @@ WHERE
 
 -- Show all users where rating is > 4.1
 SELECT 
-    "User".displayName AS 'Display name',
-    "User".firstName AS 'First Name',
-    "User".lastName AS 'Last Name',
+    "User".displayName AS "Display name",
+    "User".firstName AS "First Name",
+    "User".lastName AS "Last Name",
     "User".email,
     "User".accType AS "Account Type", 
     "User".lastActivity, 
@@ -575,10 +575,10 @@ WHERE
 -- Show a users bookmarks
 SELECT  
     Bookmark.bookmarkID,
-    "User".firstName AS 'First Name',
-    "User".lastName AS 'Last Name',
-    Listing.name AS 'Listing Name',
-    Part.name AS 'Part Name',
+    "User".firstName AS "First Name",
+    "User".lastName AS "Last Name",
+    Listing.name AS "Listing Name",
+    Part.name AS "Part Name",
     Listing.description AS "Description",
     inventoryItem.attributes AS "Attributes",
     Listing.quantity AS "QTY",
@@ -638,7 +638,7 @@ FROM
     INNER JOIN Model USING (modelID)
     INNER JOIN Manufacturer ON Model.manufacturerID = Manufacturer.manufacturerID
 WHERE
-    Model.name = 'EasyMove';
+    Model.name = "EasyMove";
 
 -- Show all the parts in a particular type
 SELECT 
