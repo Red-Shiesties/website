@@ -5,7 +5,11 @@ CREATE TYPE accountType AS ENUM ('user', 'admin', 'moderator');
 CREATE TYPE reportType AS ENUM ('Post', 'Listing', 'Profile');
 
 
-CREATE TABLE "User"(
+DROP TABLE IF EXISTS suspendedUser, Reports, Listing, wordFilter, ForumLinkPrefix,
+    Moderator, threadRead, threadSubscription, Post, Thread, Prefix, Forum, "User" CASCADE;
+
+-- Create tables
+CREATE TABLE "User" (
     userID SERIAL PRIMARY KEY,
     firstName VARCHAR(30) NOT NULL,
     lastName VARCHAR(30) NOT NULL,
@@ -13,22 +17,17 @@ CREATE TABLE "User"(
     password VARCHAR(50) NOT NULL,
     displayName VARCHAR(50),
     accType accountType DEFAULT 'user',
-    addressLine1 VARCHAR(50),
-    addressLine2 VARCHAR(50),
-    city VARCHAR(30),
-    state VARCHAR(15),
-    zipcode int,
     lastActivity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     inactive VARCHAR(1) DEFAULT '0',
     referralCode VARCHAR(10) DEFAULT '0000000',
     referredBy INT,
-    rating DOUBLE PRECISION DEFAULT 0.0,
+    rating DECIMAL DEFAULT 0.0,
     signupComplete BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE Forum(
+CREATE TABLE Forum (
     forumID SERIAL PRIMARY KEY,
-    parentID INT NOT NULL,
+    parentID INT,
     name VARCHAR(30) NOT NULL,
     description TEXT NOT NULL,
     isCategory BOOLEAN DEFAULT FALSE,
@@ -36,15 +35,15 @@ CREATE TABLE Forum(
     isLocked BOOLEAN DEFAULT FALSE,
     numberOfPosts INT DEFAULT 0,
     numberOfThreads INT DEFAULT 0,
-    FOREIGN KEY (parentID) REFERENCES Forum(forumID)
+    FOREIGN KEY (parentID) REFERENCES Forum(forumID) ON DELETE SET NULL
 );
 
-CREATE TABLE Prefix(
+CREATE TABLE Prefix (
     prefixID SERIAL PRIMARY KEY,
     name VARCHAR(20)
 );
 
-CREATE TABLE Thread(
+CREATE TABLE Thread (
     threadID SERIAL PRIMARY KEY,
     title VARCHAR(50) NOT NULL,
     prefixID INT,
@@ -58,9 +57,9 @@ CREATE TABLE Thread(
     FOREIGN KEY (userID) REFERENCES "User"(userID)
 );
 
-CREATE TABLE Post(
+CREATE TABLE Post (
     postID SERIAL PRIMARY KEY,
-    parentPostID INT NOT NULL,
+    parentPostID INT,
     threadID INT NOT NULL,
     authorID INT NOT NULL,
     forumID INT NOT NULL,
@@ -68,14 +67,14 @@ CREATE TABLE Post(
     editedOn TIMESTAMP DEFAULT NULL,
     editedByID INT,
     content TEXT NOT NULL,
-    FOREIGN KEY (parentPostID) REFERENCES Post(postID),
+    FOREIGN KEY (parentPostID) REFERENCES Post(postID) ON DELETE SET NULL,
     FOREIGN KEY (threadID) REFERENCES Thread(threadID),
     FOREIGN KEY (authorID) REFERENCES "User"(userID),
     FOREIGN KEY (forumID) REFERENCES Forum(forumID),
     FOREIGN KEY (editedByID) REFERENCES "User"(userID)
 );
 
-CREATE TABLE threadSubscription(
+CREATE TABLE threadSubscription (
     subscriptionID SERIAL PRIMARY KEY,
     threadID INT NOT NULL,
     userID INT NOT NULL,
@@ -84,7 +83,7 @@ CREATE TABLE threadSubscription(
     FOREIGN KEY (userID) REFERENCES "User"(userID)
 );
 
-CREATE TABLE threadRead(
+CREATE TABLE threadRead (
     readID SERIAL PRIMARY KEY,
     threadID INT NOT NULL,
     userID INT NOT NULL,
@@ -93,7 +92,7 @@ CREATE TABLE threadRead(
     FOREIGN KEY (userID) REFERENCES "User"(userID)
 );
 
-CREATE TABLE Moderator(
+CREATE TABLE Moderator (
     moderatorID SERIAL PRIMARY KEY,
     forumID INT NOT NULL,
     userID INT NOT NULL,
@@ -102,7 +101,7 @@ CREATE TABLE Moderator(
     FOREIGN KEY (userID) REFERENCES "User"(userID)
 );
 
-CREATE TABLE ForumLinkPrefix(
+CREATE TABLE ForumLinkPrefix (
     ForumLinkPrefixID SERIAL PRIMARY KEY,
     prefixID INT NOT NULL,
     forumID INT NOT NULL,
@@ -110,13 +109,13 @@ CREATE TABLE ForumLinkPrefix(
     FOREIGN KEY (forumID) REFERENCES Forum(forumID)
 );
 
-CREATE TABLE wordFilter(
+CREATE TABLE wordFilter (
     wordFilterID SERIAL PRIMARY KEY,
     badWord VARCHAR(15) NOT NULL,
     replacement VARCHAR(15) DEFAULT '******'
 );
 
-CREATE TABLE Listing(
+CREATE TABLE Listing (
     listingID SERIAL PRIMARY KEY,
     userID INT NOT NULL,
     name VARCHAR(40) NOT NULL,
@@ -131,7 +130,7 @@ CREATE TABLE Listing(
     FOREIGN KEY (userID) REFERENCES "User"(userID)
 );
 
-CREATE TABLE Reports(
+CREATE TABLE Reports (
     reportID SERIAL PRIMARY KEY,
     reporterID INT NOT NULL,
     respondentID INT NOT NULL,
@@ -146,7 +145,7 @@ CREATE TABLE Reports(
     FOREIGN KEY (postID) REFERENCES Post(postID)
 );
 
-CREATE TABLE suspendedUser(
+CREATE TABLE suspendedUser (
     suspendedUserID SERIAL PRIMARY KEY,
     userID INT NOT NULL,
     suspendedByID INT NOT NULL,
@@ -157,16 +156,16 @@ CREATE TABLE suspendedUser(
     FOREIGN KEY (suspendedByID) REFERENCES "User"(userID)
 );
 
-INSERT INTO "User" (firstName, lastName, email, password, displayName, accType, addressLine1, city, state, zipcode, rating, signupComplete)
+INSERT INTO "User" (firstName, lastName, email, password, displayName, accType, rating, signupComplete)
 VALUES
-('John', 'Doe', 'john.doe@example.com', 'password123', 'jdoe', 'user', '123 Main St', 'Springfield', 'IL', 62704, 4.5, TRUE),
-('Jane', 'Smith', 'jane.smith@example.com', 'securepass', 'jsmith', 'admin', '456 Oak Ave', 'Bloomington', 'IL', 61701, 5.0, TRUE),
-('Alice', 'Johnson', 'alice.j@example.com', 'mypassword', 'alicej', 'moderator', '789 Pine Rd', 'Champaign', 'IL', 61820, 3.8, FALSE),
-('Bob', 'Brown', 'bob.b@example.com', 'passw0rd', 'bobb', 'user', '101 Maple Dr', 'Peoria', 'IL', 61602, 2.7, FALSE);
+('John', 'Doe', 'john.doe@example.com', 'password123', 'jdoe', 'user', 4.5, TRUE),
+('Jane', 'Smith', 'jane.smith@example.com', 'securepass', 'jsmith', 'admin', 5.0, TRUE),
+('Alice', 'Johnson', 'alice.j@example.com', 'mypassword', 'alicej', 'moderator', 3.8, FALSE),
+('Bob', 'Brown', 'bob.b@example.com', 'passw0rd', 'bobb', 'user', 2.7, FALSE);
 
 INSERT INTO Forum (parentID, name, description, isCategory, forum_order, isLocked)
 VALUES
-(0, 'General Discussion', 'A place for general conversation.', TRUE, 1, FALSE),
+(1, 'General Discussion', 'A place for general conversation.', TRUE, 1, FALSE),
 (1, 'Technology', 'Discussions about tech trends and gadgets.', FALSE, 2, FALSE),
 (1, 'Gaming', 'A forum dedicated to gaming enthusiasts.', FALSE, 3, FALSE),
 (1, 'Announcements', 'Official announcements from admins.', FALSE, 4, TRUE);
@@ -187,9 +186,9 @@ VALUES
 
 INSERT INTO Post (parentPostID, threadID, authorID, forumID, content)
 VALUES
-(0, 1, 2, 1, 'Welcome everyone! Feel free to introduce yourself.'),
+(1, 1, 2, 1, 'Welcome everyone! Feel free to introduce yourself.'),
 (1, 2, 1, 2, 'Python and JavaScript are great choices for beginners!'),
-(0, 3, 4, 3, 'Check out these games: Elden Ring, Baldurs Gate 3, and Cyberpunk 2077.'),
+(1, 3, 4, 3, 'Check out these games: Elden Ring, Baldurs Gate 3, and Cyberpunk 2077.'),
 (3, 4, 2, 4, 'Please read these rules carefully before posting.');
 
 INSERT INTO threadSubscription (threadID, userID)
