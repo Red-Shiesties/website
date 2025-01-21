@@ -1,0 +1,3 @@
+# Authentication Endpoint
+
+## Protected Endpoints
