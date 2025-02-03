@@ -1,0 +1,963 @@
+openapi: '3.0.0'
+info:
+  version: '1.0.0'
+  title: 'Sample API'
+  description: MIF API Specifications
+tags:
+  - name: bookmarks
+    description: Everything about a user's bookmarks
+  - name: listings
+    description: Everything about listings
+  - name: conversations
+    description: Everything about user conversations
+paths:
+  /bookmarks:
+    get:
+      tags:
+        - bookmarks
+      summary: Get all bookmarked listings
+      operationId: getBookmarks
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBookmarkResponse'
+  /bookmarks/{listingId}:
+    post:
+      tags:
+        - bookmarks
+      summary: Bookmark a listing
+      operationId: bookmarkListing
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully bookmarked listing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookmarkSuccessResponse'
+        '400':
+          description: Failed operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookmarkFailedResponse'
+    delete:
+      tags:
+        - bookmarks
+      summary: Removes a bookmarked listing
+      operationId: deleteBookmark
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookmarkSuccessResponse'
+        '404':
+          description: Failed operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookmarkFailedResponse'
+  /listings:
+    get:
+      tags:
+        - listings
+      summary: Get listings with filtering and pagination
+      operationId: getListings
+      parameters:
+        - name: radius
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: latitude
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: longitude
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: nextToken
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingSearchResponse'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingFailedResponse'
+    post:
+      tags:
+        - listings
+      summary: Create a new listing
+      operationId: createListing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListingCreateRequest'
+      responses:
+        '200':
+          description: Listing successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingSuccessResponse'
+        '400':
+          description: Invalid form data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingFailedResponse'
+  /listings/{listingId}:
+    get:
+      tags:
+        - listings
+      summary: Get a specific listing by ID
+      operationId: getListingById
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Listing retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingSuccessResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingFailedResponse'
+        '404':
+          description: Listing not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingFailedResponse'
+    patch:
+      tags:
+        - listings
+      summary: Update a listing
+      operationId: updateListing
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListingUpdateRequest'
+      responses:
+        '200':
+          description: Listing successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingSuccessResponse'
+        '400':
+          description: Invalid form data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingFailedResponse'
+        '403':
+          description: Forbidden or listing is in a terminal state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingFailedResponse'
+        '404':
+          description: Listing not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingFailedResponse'
+  /conversations:
+    post:
+      tags:
+        - conversations
+      summary: Initiate a conversation
+      operationId: initiateConversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationInitiateRequest'
+      responses:
+        '201':
+          description: Conversation initiated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationSuccessResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationFailedResponse'
+        '404':
+          description: User or listing not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationFailedResponse'
+    get:
+      tags:
+        - conversations
+      summary: Get conversations
+      operationId: getConversations
+      parameters:
+        - name: nextToken
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Conversations retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedConversationResponse'
+  /conversations/{conversationId}/attachments:
+    post:
+      tags:
+        - conversations
+      summary: Upload attachments to be referenced in a message
+      operationId: addAttachments
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Attachment uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentSuccessResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentFailedResponse'
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentFailedResponse'
+        '413':
+          description: File size exceeds the limit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentFailedResponse'
+        '415':
+          description: Unsupported file type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentFailedResponse'
+  /conversations/{conversationId}/messages:
+    post:
+      tags:
+        - conversations
+      summary: Send a message
+      operationId: sendMessage
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageSendRequest'
+      responses:
+        '201':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageSuccessResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageFailedResponse'
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageFailedResponse'
+    get:
+      tags:
+        - conversations
+      summary: Get messages
+      operationId: getMessages
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: nextToken
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Messages retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMessageResponse'
+  /conversations/{conversationId}/messages/{messageId}:
+    patch:
+      tags:
+        - conversations
+      summary: Update a message
+      operationId: updateMessage
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageUpdateRequest'
+      responses:
+        '200':
+          description: Message updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageSuccessResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageFailedResponse'
+        '404':
+          description: Message not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageFailedResponse'
+    delete:
+      tags:
+        - conversations
+      summary: Delete a message
+      operationId: deleteMessage
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Message deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageDeleteResponse'
+        '404':
+          description: Message not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageFailedResponse'
+  /connections:
+    get:
+      tags:
+        - account
+      summary: Get connections
+      operationId: getConnections
+      responses:
+        '200':
+          description: Connections retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionListResponse'
+    put:
+      tags:
+        - account
+      summary: Create a connection
+      operationId: createConnection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnectionCreateRequest'
+      responses:
+        '200':
+          description: Connection created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionSuccessResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionFailedResponse'
+  /connections/{id}:
+    delete:
+      tags:
+        - account
+      summary: Remove a connection
+      operationId: removeConnection
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Connection removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionDeleteResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionFailedResponse'
+components:
+  schemas:
+    GenericResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          type: object
+          nullable: true
+    PaginationResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                count:
+                  type: integer
+                hasNext:
+                  type: boolean
+                nextToken:
+                  type: string
+                results:
+                  type: array
+                  items:
+                    type: object
+    Bookmark:
+      type: object
+      properties:
+        id:
+          type: string
+        listingId:
+          type: string
+    PaginatedBookmarkResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginationResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                results:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Bookmark'
+    BookmarkSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            message:
+              example: Successfully processed request.
+            data:
+              example: null
+    BookmarkFailedResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            message:
+              type: string
+              example: An error occurred while processing the request.
+            data:
+              example: null
+    Listing:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        attributes:
+          type: object
+        quantity:
+          type: integer
+        latitude:
+          type: number
+        longitude:
+          type: number
+        inventoryItemId:
+          type: integer
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - COMPLETE
+            - ARCHIVED
+    ListingSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            message:
+              example: Successfully processed request.
+            data:
+              $ref: '#/components/schemas/Listing'
+    ListingFailedResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: An error occurred while processing the request.
+        data:
+          oneOf:
+            - type: object
+            - nullable: true
+    ListingSearchResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                count:
+                  type: integer
+                hasNext:
+                  type: boolean
+                nextToken:
+                  type: string
+                results:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Listing'
+    ListingCreateRequest:
+      type: object
+      required:
+        - title
+        - description
+        - attributes
+        - quantity
+        - latitude
+        - longitude
+        - inventoryItemId
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        attributes:
+          type: object
+        quantity:
+          type: integer
+        latitude:
+          type: number
+        longitude:
+          type: number
+        inventoryItemId:
+          type: integer
+    ListingUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        attributes:
+          type: object
+        quantity:
+          type: integer
+        inventoryItemId:
+          type: integer
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - COMPLETE
+            - ARCHIVED
+    Attachment:
+      type: object
+      properties:
+        attachmentId:
+          type: string
+        fileUrl:
+          type: string
+        fileName:
+          type: string
+        fileSize:
+          type: integer
+        fileType:
+          type: string
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: string
+        listingId:
+          type: string
+          nullable: true
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+            username:
+              type: string
+            displayName:
+              type: string
+            organization:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+    ConversationInitiateRequest:
+      type: object
+      required:
+        - userId
+      properties:
+        userId:
+          type: string
+        listingId:
+          type: string
+          nullable: true
+    ConversationSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Conversation'
+    ConversationFailedResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            message:
+              type: string
+              example: Failed to initiate conversation.
+            data:
+              nullable: true
+    PaginatedConversationResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginationResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                results:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Conversation'
+    AttachmentSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Attachment'
+    AttachmentFailedResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            message:
+              type: string
+              example: Failed to upload attachment.
+            data:
+              nullable: true
+    MessageSendRequest:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+        attachments:
+          type: array
+          items:
+            type: string
+    MessageSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                messageId:
+                  type: string
+                content:
+                  type: string
+                attachments:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Attachment'
+    MessageFailedResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            message:
+              type: string
+              example: Failed to send message.
+            data:
+              nullable: true
+    PaginatedMessageResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginationResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                results:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      messageId:
+                        type: string
+                      content:
+                        type: string
+                      attachments:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Attachment'
+    MessageUpdateRequest:
+      type: object
+      properties:
+        content:
+          type: string
+        attachments:
+          type: array
+          items:
+            type: string
+    MessageDeleteResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            message:
+              type: string
+              example: Message deleted successfully.
+            data:
+              nullable: true
+    Connection:
+      type: object
+      properties:
+        id:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        username:
+          type: string
+        displayName:
+          type: string
+        organization:
+          $ref: '#/components/schemas/Organization'
+    Organization:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+
+    # Connection Request/Response Schemas
+    ConnectionCreateRequest:
+      type: object
+      required:
+        - userId
+      properties:
+        userId:
+          type: string
+
+    ConnectionSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Connection'
+
+    ConnectionFailedResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            message:
+              type: string
+              example: 'Failed to process connection request.'
+            data:
+              nullable: true
+
+    ConnectionListResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                connections:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Connection'
+
+    ConnectionDeleteResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenericResponse'
+        - type: object
+          properties:
+            message:
+              type: string
+              example: 'Successfully removed a connection.'
+            data:
+              nullable: true
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+security:
+  - ApiKey: []

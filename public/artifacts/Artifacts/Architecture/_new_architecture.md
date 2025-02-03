@@ -74,6 +74,8 @@
 - Ensure a protected route is properly guarded.
   - A Guest should be able to access the `Connections` route.
   - A User should not be able to access the `Admin` route.
+- Ensure request are logged and sensitive information is not logged.
+- Ensure we reject large requests
 
 ## Logging
 
@@ -136,6 +138,7 @@
   "message": null,
   "data": {
     "count": 50,
+    "total": 1000,
     "hasNext": true,
     "nextToken": "251",
     "results": [{

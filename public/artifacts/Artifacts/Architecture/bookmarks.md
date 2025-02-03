@@ -11,7 +11,6 @@
 
 - Minimum Role: `User`
 - Notes:
-  - We can probably put this under the Listings service, but I need to be convinced that it makes sense to do so.
   - I wonder whether we want to perform a query on whether the listing is already bookmarked or not.
     - It may be redundant, but it could also be a good UX.
 

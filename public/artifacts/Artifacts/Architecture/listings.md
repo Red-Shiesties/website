@@ -197,7 +197,7 @@ service-->>app: Return listing details
   "quantity": int,
   "latitude": 0.0,
   "longitude": 0.0,
-  "inventoryItemId": int,
+  "inventoryItemId": int
 }
 
 // HTTP 400
